@@ -1,3 +1,6 @@
+import os
+import io
+import base64
 import matplotlib
 matplotlib.use('Agg')
 os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib'
@@ -5,8 +8,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
-import io
-import base64
 from flask import Flask, render_template, request, jsonify
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
@@ -29,7 +30,15 @@ model_store = {
 }
 
 def train_model():
+    # Performance Optimization: Cache model training
+    if model_store['kmeans'] is not None:
+        return model_store['df'], model_store['X_scaled']
+
     df = pd.read_csv(DATA_PATH)
+    # Sampling for performance on Vercel
+    if len(df) > 2000:
+        df = df.sample(2000, random_state=42)
+
     df.rename(columns={
         'age': 'AGE',
         'gender': 'GENDER',
@@ -49,6 +58,8 @@ def train_model():
     # Store for global access
     model_store['kmeans'] = kmeans
     model_store['scaler'] = scaler
+    model_store['df'] = df
+    model_store['X_scaled'] = X_scaled
     
     return df, X_scaled
 
