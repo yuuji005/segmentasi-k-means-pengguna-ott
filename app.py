@@ -1,6 +1,6 @@
-import os
 import matplotlib
 matplotlib.use('Agg')
+os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib'
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -54,91 +54,95 @@ def train_model():
 
 @app.route('/')
 def index():
-    df, X_scaled = train_model()
-    kmeans = model_store['kmeans']
-    scaler = model_store['scaler']
-    
-    # 3. Mencari K Optimal (Metode Elbow) - Dipersingkat untuk performa
-    inertia = []
-    k_range = range(1, 11)
-    for k in k_range:
-        km = KMeans(n_clusters=k, init='k-means++', random_state=42)
-        km.fit(X_scaled)
-        inertia.append(km.inertia_)
-    
-    # Generate Elbow Plot in memory
-    plt.figure(figsize=(10, 5))
-    plt.plot(k_range, inertia, marker='o', linestyle='--', color='#38bdf8')
-    plt.title('Metode Elbow untuk Menentukan K Optimal', color='white', pad=20)
-    plt.xlabel('Jumlah Klaster (k)', color='white')
-    plt.ylabel('Inertia / WCSS', color='white')
-    plt.gca().set_facecolor('none')
-    plt.gcf().set_facecolor('none')
-    plt.tick_params(colors='white')
-    
-    elbow_buffer = io.BytesIO()
-    plt.savefig(elbow_buffer, format='png', transparent=True)
-    elbow_buffer.seek(0)
-    elbow_base64 = base64.b64encode(elbow_buffer.read()).decode('utf-8')
-    plt.close()
+    try:
+        df, X_scaled = train_model()
+        kmeans = model_store['kmeans']
+        scaler = model_store['scaler']
+        
+        # 3. Mencari K Optimal (Metode Elbow) - Dipersingkat untuk performa
+        inertia = []
+        k_range = range(1, 11)
+        for k in k_range:
+            km = KMeans(n_clusters=k, init='k-means++', random_state=42)
+            km.fit(X_scaled)
+            inertia.append(km.inertia_)
+        
+        # Generate Elbow Plot in memory
+        plt.figure(figsize=(10, 5))
+        plt.plot(k_range, inertia, marker='o', linestyle='--', color='#38bdf8')
+        plt.title('Metode Elbow untuk Menentukan K Optimal', color='white', pad=20)
+        plt.xlabel('Jumlah Klaster (k)', color='white')
+        plt.ylabel('Inertia / WCSS', color='white')
+        plt.gca().set_facecolor('none')
+        plt.gcf().set_facecolor('none')
+        plt.tick_params(colors='white')
+        
+        elbow_buffer = io.BytesIO()
+        plt.savefig(elbow_buffer, format='png', transparent=True)
+        elbow_buffer.seek(0)
+        elbow_base64 = base64.b64encode(elbow_buffer.read()).decode('utf-8')
+        plt.close()
 
-    # 5. Visualisasi Hasil Clustering
-    threshold = df['TOTAL_TIME_SPENT'].quantile(0.99)
-    df_plot = df[df['TOTAL_TIME_SPENT'] <= threshold].copy()
-    df_sample = df_plot.sample(n=min(250, len(df_plot)), random_state=42)
+        # 5. Visualisasi Hasil Clustering
+        threshold = df['TOTAL_TIME_SPENT'].quantile(0.99)
+        df_plot = df[df['TOTAL_TIME_SPENT'] <= threshold].copy()
+        df_sample = df_plot.sample(n=min(250, len(df_plot)), random_state=42)
 
-    plt.figure(figsize=(10, 6))
-    plt.style.use('dark_background') 
-    
-    sns.scatterplot(data=df_sample, x='TOTAL_TIME_SPENT', y='NUMBER_OF_CONTENT_VIEWED', 
-                    hue='Cluster', palette='viridis', s=50, alpha=0.8, edgecolor='grey')
-    
-    plt.title('Hasil Clustering Pelanggan', fontsize=14, pad=15)
-    plt.xlabel('Durasi Menonton (Menit)', fontsize=11)
-    plt.ylabel('Jumlah Judul Ditonton', fontsize=11)
-    plt.legend(title='Cluster', loc='center left', bbox_to_anchor=(1, 0.5))
-    
-    plt.grid(True, linestyle='--', alpha=0.3)
-    plt.gca().set_facecolor('none')
-    plt.gcf().set_facecolor('none')
-    plt.tight_layout()
-    
-    cluster_buffer = io.BytesIO()
-    plt.savefig(cluster_buffer, format='png', transparent=True)
-    cluster_buffer.seek(0)
-    cluster_base64 = base64.b64encode(cluster_buffer.read()).decode('utf-8')
-    plt.close()
+        plt.figure(figsize=(10, 6))
+        plt.style.use('dark_background') 
+        
+        sns.scatterplot(data=df_sample, x='TOTAL_TIME_SPENT', y='NUMBER_OF_CONTENT_VIEWED', 
+                        hue='Cluster', palette='viridis', s=50, alpha=0.8, edgecolor='grey')
+        
+        plt.title('Hasil Clustering Pelanggan', fontsize=14, pad=15)
+        plt.xlabel('Durasi Menonton (Menit)', fontsize=11)
+        plt.ylabel('Jumlah Judul Ditonton', fontsize=11)
+        plt.legend(title='Cluster', loc='center left', bbox_to_anchor=(1, 0.5))
+        
+        plt.grid(True, linestyle='--', alpha=0.3)
+        plt.gca().set_facecolor('none')
+        plt.gcf().set_facecolor('none')
+        plt.tight_layout()
+        
+        cluster_buffer = io.BytesIO()
+        plt.savefig(cluster_buffer, format='png', transparent=True)
+        cluster_buffer.seek(0)
+        cluster_base64 = base64.b64encode(cluster_buffer.read()).decode('utf-8')
+        plt.close()
 
-    # --- CLUSTER PROFILING ---
-    profiles = []
-    cluster_means = df.groupby('Cluster')[model_store['features']].mean().sort_values('TOTAL_TIME_SPENT')
-    names = ["The Lite User", "The Balanced Viewer", "The Binge Watcher"]
-    
-    for i, (idx, row) in enumerate(cluster_means.iterrows()):
-        profiles.append({
-            'id': int(idx),
-            'name': names[i],
-            'avg_age': round(row['AGE'], 1),
-            'avg_time': round(row['TOTAL_TIME_SPENT'], 1),
-            'avg_content': round(row['NUMBER_OF_CONTENT_VIEWED'], 1),
-            'count': int(df['Cluster'].value_counts()[idx])
-        })
+        # --- CLUSTER PROFILING ---
+        profiles = []
+        cluster_means = df.groupby('Cluster')[model_store['features']].mean().sort_values('TOTAL_TIME_SPENT')
+        names = ["The Lite User", "The Balanced Viewer", "The Binge Watcher"]
+        
+        for i, (idx, row) in enumerate(cluster_means.iterrows()):
+            profiles.append({
+                'id': int(idx),
+                'name': names[i],
+                'avg_age': round(row['AGE'], 1),
+                'avg_time': round(row['TOTAL_TIME_SPENT'], 1),
+                'avg_content': round(row['NUMBER_OF_CONTENT_VIEWED'], 1),
+                'count': int(df['Cluster'].value_counts()[idx])
+            })
 
-    table_data = df[['GENDER', 'AGE', 'TOTAL_TIME_SPENT', 'NUMBER_OF_CONTENT_VIEWED', 'Cluster']].head(15)
+        table_data = df[['GENDER', 'AGE', 'TOTAL_TIME_SPENT', 'NUMBER_OF_CONTENT_VIEWED', 'Cluster']].head(15)
 
-    stats = {
-        'total_subscribers': len(df),
-        'avg_age': round(df['AGE'].mean(), 1),
-        'avg_time': round(df['TOTAL_TIME_SPENT'].mean(), 1),
-        'avg_content': round(df['NUMBER_OF_CONTENT_VIEWED'].mean(), 1)
-    }
-    
-    return render_template('index.html', 
-                           tables=table_data.to_dict(orient='records'),
-                           stats=stats,
-                           profiles=profiles,
-                           elbow_url=f"data:image/png;base64,{elbow_base64}",
-                           cluster_url=f"data:image/png;base64,{cluster_base64}")
+        stats = {
+            'total_subscribers': len(df),
+            'avg_age': round(df['AGE'].mean(), 1),
+            'avg_time': round(df['TOTAL_TIME_SPENT'].mean(), 1),
+            'avg_content': round(df['NUMBER_OF_CONTENT_VIEWED'].mean(), 1)
+        }
+        
+        return render_template('index.html', 
+                               tables=table_data.to_dict(orient='records'),
+                               stats=stats,
+                               profiles=profiles,
+                               elbow_url=f"data:image/png;base64,{elbow_base64}",
+                               cluster_url=f"data:image/png;base64,{cluster_base64}")
+    except Exception as e:
+        import traceback
+        return f"<h3>Error: {str(e)}</h3><pre>{traceback.format_exc()}</pre>", 500
 
 @app.route('/predict', methods=['POST'])
 def predict():
