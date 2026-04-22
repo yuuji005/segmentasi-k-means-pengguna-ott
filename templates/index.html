@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Segmentasi OTT | Premium Analytics</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- UI Framework -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-deep: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-blue: #38bdf8;
+            --accent-purple: #818cf8;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(129, 140, 248, 0.05) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            margin: 0;
+            padding-bottom: 50px;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(56, 189, 248, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-blue);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .section-header {
+            margin-top: 40px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-header h2 {
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .section-header .line {
+            flex-grow: 1;
+            height: 1px;
+            background: var(--glass-border);
+        }
+
+        .visualization-img {
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            transition: transform 0.3s ease;
+        }
+
+        .visualization-img:hover {
+            transform: scale(1.02);
+        }
+
+        .custom-table {
+            color: var(--text-main);
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            width: 100%;
+        }
+
+        .custom-table th {
+            background: transparent;
+            color: var(--text-dim);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            padding: 12px 20px;
+            border: none;
+        }
+
+        .custom-table tbody tr {
+            background: rgba(255, 255, 255, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        .custom-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.07);
+            transform: scale(1.01);
+        }
+
+        .custom-table td {
+            padding: 16px 20px;
+            border: none;
+            font-weight: 400;
+        }
+
+        .custom-table td:first-child { border-radius: 12px 0 0 12px; }
+        .custom-table td:last-child { border-radius: 0 12px 12px 0; }
+
+        .cluster-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--accent-blue);
+            color: #000;
+        }
+
+        /* Responsive Optimizations */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+            .display-5 {
+                font-size: 2.2rem;
+            }
+            .section-header h2 {
+                font-size: 1.25rem;
+            }
+            .glass-card {
+                padding: 18px;
+                border-radius: 20px;
+            }
+            .stat-card {
+                gap: 15px;
+            }
+            .stat-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 1.25rem;
+            }
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding-bottom: 30px;
+            }
+            .display-5 {
+                font-size: 1.8rem;
+            }
+            .lead {
+                font-size: 1rem;
+            }
+            .glass-card:hover {
+                transform: none; /* Disable hover lift on mobile */
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <span class="navbar-brand"><i class="fas fa-chart-pie me-2"></i>OTT Analytics Hub</span>
+            <div class="d-flex text-dim small align-items-center">
+                <span class="me-3 d-none d-md-inline">Tugas 6 - Machine Learning</span>
+                <div class="stat-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Dashboard Header -->
+        <div class="row align-items-center mb-5 animate-fade">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold mb-2">Segmentasi Pelanggan OTT</h1>
+                <p class="text-dim lead">Analisis klastering menggunakan algoritma K-Means untuk memahami pola perilaku pengguna layanan streaming.</p>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-6 col-lg-3 animate-fade delay-1">
+                <div class="glass-card stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.total_subscribers }}</div>
+                        <div class="stat-label">Total Pengguna</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 animate-fade delay-2">
+                <div class="glass-card stat-card">
+                    <div class="stat-icon" style="color: #f472b6; background: rgba(244, 114, 182, 0.1);"><i class="fas fa-birthday-cake"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.avg_age }}</div>
+                        <div class="stat-label">Rerata Usia</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 animate-fade delay-3">
+                <div class="glass-card stat-card">
+                    <div class="stat-icon" style="color: #fbbf24; background: rgba(251, 191, 36, 0.1);"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.avg_time }}</div>
+                        <div class="stat-label">Rerata Menit/Sesi</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 animate-fade delay-3">
+                <div class="glass-card stat-card">
+                    <div class="stat-icon" style="color: #4ade80; background: rgba(74, 222, 128, 0.1);"><i class="fas fa-play-circle"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.avg_content }}</div>
+                        <div class="stat-label">Konten/Bulan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualizations -->
+        <div class="section-header">
+            <i class="fas fa-project-diagram"></i>
+            <h2>Model Visualisasi</h2>
+            <div class="line"></div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-5 animate-fade delay-1">
+                <div class="glass-card p-4">
+                    <h5 class="mb-4 d-flex align-items-center">
+                        <span class="badge p-2 bg-primary me-2"><i class="fas fa-wave-square"></i></span>
+                        Metode Elbow
+                    </h5>
+                    <img src="{{ elbow_url }}" alt="Elbow Method" class="visualization-img">
+                    <p class="text-dim small mt-4">Menentukan jumlah klaster (K) optimal.</p>
+                </div>
+            </div>
+            <div class="col-lg-7 animate-fade delay-2">
+                <div class="glass-card p-4">
+                    <h5 class="mb-4 d-flex align-items-center">
+                        <span class="badge p-2 bg-success me-2"><i class="fas fa-chart-scatter"></i></span>
+                        Peta Segmentasi
+                    </h5>
+                    <img src="{{ cluster_url }}" alt="Cluster Result" class="visualization-img">
+                    <p class="text-dim small mt-4">Sebaran data pelanggan berdasarkan durasi dan konten.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Cluster Profiles -->
+        <div class="section-header">
+            <i class="fas fa-id-card"></i>
+            <h2>Karakteristik Segmen Pelanggan</h2>
+            <div class="line"></div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            {% for profile in profiles %}
+            <div class="col-lg-4 animate-fade">
+                <div class="glass-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge rounded-pill bg-{% if profile.id == 0 %}primary{% elif profile.id == 1 %}info{% else %}success{% endif %}">
+                            Cluster {{ profile.id }}
+                        </span>
+                        <span class="text-dim small"><i class="fas fa-users me-1"></i> {{ profile.count }} Orang</span>
+                    </div>
+                    <h4 class="fw-bold mb-3">{{ profile.name }}</h4>
+                    <hr class="opacity-10">
+                    <div class="small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-dim">Rerata Usia:</span>
+                            <span class="fw-600">{{ profile.avg_age }} Thn</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-dim">Durasi Nonton:</span>
+                            <span class="fw-600">{{ profile.avg_time }} Min</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-dim">Konten Dilihat:</span>
+                            <span class="fw-600">{{ profile.avg_content }} Judul</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- NEW: Prediction Simulator -->
+        <div class="section-header">
+            <i class="fas fa-magic"></i>
+            <h2>Simulator Prediksi Real-Time</h2>
+            <div class="line"></div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6 animate-fade">
+                <div class="glass-card">
+                    <h5 class="mb-4">Masukkan Parameter Pelanggan</h5>
+                    <form id="predictForm">
+                        <div class="mb-3">
+                            <label class="form-label text-dim small">USIA (TAHUN)</label>
+                            <input type="number" class="form-control bg-dark border-secondary text-white" id="age" value="25" min="1" max="100">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-dim small">DURASI NONTON (MENIT)</label>
+                            <input type="number" class="form-control bg-dark border-secondary text-white" id="time" value="300" min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-dim small">JUMLAH KONTEN DILIHAT</label>
+                            <input type="number" class="form-control bg-dark border-secondary text-white" id="content" value="10" min="0">
+                        </div>
+                        <button type="button" onclick="predictCluster()" class="btn btn-primary w-100 fw-bold py-2 mt-2">
+                            <i class="fas fa-bolt me-2"></i>Prediksi Segmen
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-6 animate-fade">
+                <div id="resultCard" class="glass-card d-flex flex-column align-items-center justify-content-center text-center py-5">
+                    <div class="mb-3 text-dim">
+                        <i class="fas fa-microchip fa-3x opacity-20"></i>
+                    </div>
+                    <h4>Hasil Prediksi Akan Muncul Di Sini</h4>
+                    <p class="text-dim small px-4">Klik tombol prediksi untuk mengetahui kategori pelanggan berdasarkan input Anda.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="section-header">
+            <i class="fas fa-table"></i>
+            <h2>Sampel Data Terklaster</h2>
+            <div class="line"></div>
+        </div>
+
+        <div class="glass-card mb-5 animate-fade color-white">
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Gender</th>
+                            <th>Usia</th>
+                            <th>Durasi Sesi</th>
+                            <th>Konten Ditonton</th>
+                            <th class="text-center">Label Klaster</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in tables %}
+                        <tr>
+                            <td class="fw-600">{{ row['GENDER'] }}</td>
+                            <td>{{ row['AGE'] }} <span class="text-dim small">Thn</span></td>
+                            <td>{{ row['TOTAL_TIME_SPENT'] }} <span class="text-dim small">Min</span></td>
+                            <td>{{ row['NUMBER_OF_CONTENT_VIEWED'] }} <span class="text-dim small">Titles</span></td>
+                            <td class="text-center">
+                                <span class="cluster-badge bg-{% if row['Cluster'] == 0 %}primary{% elif row['Cluster'] == 1 %}info{% else %}success{% endif %}">
+                                    Cluster {{ row['Cluster'] }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Bootstrap & AJAX -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function predictCluster() {
+            const data = {
+                age: document.getElementById('age').value,
+                time: document.getElementById('time').value,
+                content: document.getElementById('content').value
+            };
+
+            const resultDiv = document.getElementById('resultCard');
+            resultDiv.innerHTML = '<div class="spinner-border text-primary" role="status"></div><p class="mt-3">Menganalisis data...</p>';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                if(result.success) {
+                    let color = result.cluster === 0 ? '#38bdf8' : (result.cluster === 1 ? '#22d3ee' : '#4ade80');
+                    resultDiv.innerHTML = `
+                        <div class="stat-icon mb-3" style="width:70px; height:70px; font-size: 2rem; background: ${color}22; color: ${color}">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <h5 class="text-dim mb-1">HASIL PREDIKSI:</h5>
+                        <h2 class="fw-bold mb-3" style="color: ${color}">${result.name}</h2>
+                        <p class="text-dim small">Pelanggan dengan profil ini teridentifikasi sebagai bagian dari segmen <strong>Cluster ${result.cluster}</strong>.</p>
+                        <div class="mt-3 badge p-2 px-3" style="background: ${color}; color: #000; font-weight: 700">ANALISIS SELESAI</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-danger mb-3 fa-2x"></i><h4>Error</h4><p>${result.error}</p>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<i class="fas fa-wifi text-danger mb-3 fa-2x"></i><h4>Koneksi Gagal</h4><p>${e.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
