@@ -2,7 +2,8 @@
   "builds": [
     {
       "src": "app.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": { "includeFiles": ["ott_subscriber_master_raw.csv"] }
     }
   ],
   "routes": [
